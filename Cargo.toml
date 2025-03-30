@@ -1,0 +1,16 @@
+[package]
+name = "telegram-ai-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12.15", features = ["blocking", "json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+anyhow = "1.0.97"
+regex = "1.11.1"
+teloxide = "0.13.0"
+tokio = { version = "1.44.1", features = ["full"] }
+dotenv = "0.15.0"
+#[dev-dependencies]
+serial_test = "3.2.0"

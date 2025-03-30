@@ -1,1 +1,5 @@
-# ai-agent-telegram-bot
+# Docker
+
+```
+docker-compose up --build
+```
