@@ -1,5 +1,6 @@
 /target
 .env
+.env-openai
 facts.txt
 .idea
 all-files.txt
