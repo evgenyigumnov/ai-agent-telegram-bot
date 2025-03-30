@@ -25,7 +25,7 @@ RUN mkdir /app
 COPY --from=builder /usr/src/app/target/release/ai-agent-telegram-bot /app/bot
 COPY .env /app/.env
 
-RUN  rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
