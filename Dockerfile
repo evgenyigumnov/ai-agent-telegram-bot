@@ -21,14 +21,13 @@ RUN cargo build --release
 FROM debian:bullseye
 
 
-RUN mkdir /backend
-COPY --from=builder /usr/src/app/target/release/backend /backend/backend
+RUN mkdir /app
+COPY --from=builder /usr/src/app/target/release/ai-agent-telegram-bot /app/bot
+COPY .env /app/.env
 
 RUN  rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
 
-WORKDIR /backend
 
-EXPOSE 80
-
-CMD ["./backend"]
+CMD ["./bot"]

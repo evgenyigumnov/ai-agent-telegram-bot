@@ -1,5 +1,5 @@
 [package]
-name = "telegram-ai-bot"
+name = "ai-agent-telegram-bot"
 version = "0.1.0"
 edition = "2021"
 

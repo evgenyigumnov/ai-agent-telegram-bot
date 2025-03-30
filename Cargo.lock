@@ -27,6 +27,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ai-agent-telegram-bot"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dotenv",
+ "regex",
+ "reqwest 0.12.15",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "teloxide",
+ "tokio",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1672,21 +1687,6 @@ name = "takecell"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20f34339676cdcab560c9a82300c4c2581f68b9369aedf0fae86f2ff9565ff3e"
-
-[[package]]
-name = "telegram-ai-bot"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "dotenv",
- "regex",
- "reqwest 0.12.15",
- "serde",
- "serde_json",
- "serial_test",
- "teloxide",
- "tokio",
-]
 
 [[package]]
 name = "teloxide"
