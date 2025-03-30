@@ -17,9 +17,9 @@ A smart and friendly AI-powered Telegram bot that can answer questions, store an
 - Rust + Tokio async runtime
 - [`teloxide`](https://github.com/teloxide/teloxide) — Telegram bot framework
 - [`reqwest`](https://github.com/seanmonstar/reqwest) — HTTP client
-- [`serde`](https://serde.rs/) — JSON serialization
+- [`serde`](https://github.com/serde-rs/serde) — JSON serialization
 - [`qdrant`](https://qdrant.tech/) — Vector search engine
-- Any LLM that supports OpenAI-compatible API (e.g. [`lm-studio`](https://github.com/lmstudio-ai/lms), ['ollama'](https://github.com/ollama/ollama), etc.)
+- Any LLM that supports OpenAI-compatible API (e.g. [`lm-studio`](https://github.com/lmstudio-ai/lms), [`ollama`](https://github.com/ollama/ollama), etc.)
 
 ## 🚀 Quickstart (Docker Compose)
 
