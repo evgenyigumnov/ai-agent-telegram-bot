@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::collections::HashMap;
 use std::env;
 
 mod ai;
@@ -19,20 +20,22 @@ async fn main() -> anyhow::Result<()> {
 
     let bot = Bot::from_env();
 
-    let state = Arc::new(Mutex::new(State::AwaitingPassword));
+    let user_states = Arc::new(Mutex::new(HashMap::<teloxide::types::ChatId, State>::new()));
 
     teloxide::repl(bot, move |message: Message, bot: Bot| {
-        let state = state.clone();
+        let user_states = user_states.clone();
         async move {
             if let Some(text) = message.text() {
+                let chat_id = message.chat.id;
                 let response_text = tokio::task::spawn_blocking({
                     let input = text.to_owned();
-                    let state = state.clone();
+                    let user_states = user_states.clone();
                     move || {
-                        let mut state_guard = state.blocking_lock();
-                        match State::process(&input, &state_guard) {
+                        let mut states = user_states.blocking_lock();
+                        let state = states.entry(chat_id).or_insert(State::AwaitingPassword);
+                        match State::process(&input, state) {
                             Ok((new_state, output)) => {
-                                *state_guard = new_state;
+                                *state = new_state;
                                 output
                             }
                             Err(err) => err.to_string(),
@@ -41,8 +44,7 @@ async fn main() -> anyhow::Result<()> {
                 })
                 .await
                 .unwrap_or_else(|err| err.to_string());
-
-                bot.send_message(message.chat.id, response_text).await?;
+                bot.send_message(chat_id, response_text).await?;
             } else {
                 bot.send_message(message.chat.id, "Не понял, что ты сказал!")
                     .await?;
