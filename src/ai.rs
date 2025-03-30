@@ -81,5 +81,3 @@ pub fn emb(input: &str) -> anyhow::Result<Vec<f32>> {
         Err(anyhow::anyhow!("No embedding data found"))
     }
 }
-
-

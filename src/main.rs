@@ -1,5 +1,5 @@
-use std::env;
 use regex::Regex;
+use std::env;
 
 mod ai;
 mod qdrant;
@@ -15,9 +15,7 @@ use tokio::sync::Mutex;
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
 
-    let _ = tokio::task::spawn_blocking(|| {
-        init_qdrant().and_then(|_| print_docs())
-    }).await?;
+    let _ = tokio::task::spawn_blocking(|| init_qdrant().and_then(|_| print_docs())).await?;
 
     let bot = Bot::from_env();
 
@@ -37,9 +35,7 @@ async fn main() -> anyhow::Result<()> {
                                 *state_guard = new_state;
                                 output
                             }
-                            Err(err) => {
-                                 err.to_string()
-                            }
+                            Err(err) => err.to_string(),
                         }
                     }
                 })
@@ -139,8 +135,7 @@ impl State {
         let response = ai::llm(
             "Ты дружелюбный и полезный помощник. Начни отвечать без приветствия.",
             &user,
-        )
-        ?;
+        )?;
         // println!("{}", response);
         Ok((State::Pending, response))
     }
@@ -164,8 +159,11 @@ impl State {
     }
 
     pub fn exec_chat(message: &str) -> anyhow::Result<(Self, String)> {
-        let response = ai::llm("Ты дружелюбный и полезный помощник. Начни отвечать без приветствия.\
-         Отвечай желательно одним или не больше трех предложений.", message)?;
+        let response = ai::llm(
+            "Ты дружелюбный и полезный помощник. Начни отвечать без приветствия.\
+         Отвечай желательно одним или не больше трех предложений.",
+            message,
+        )?;
         // println!("{}", response);
         Ok((State::Pending, response))
     }
@@ -210,7 +208,8 @@ impl State {
         let user = format!(
             "<user_request>{}</user_request> На основе описание user_request сформирую \
             linux команду для терминала. \
-             Ответь в формате <command>КОМАНДА</command>", message
+             Ответь в формате <command>КОМАНДА</command>",
+            message
         );
         let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let command = State::extract_tag(&response, "command");

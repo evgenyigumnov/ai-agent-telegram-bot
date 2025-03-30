@@ -29,12 +29,11 @@ pub fn add_document(id: i32, text: &str) -> anyhow::Result<()> {
         payload: json!({ "text": text }),
     };
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let url = format!(
         "{}/collections/{}/points?wait=true",
-        qdrant_url,collection_name
+        qdrant_url, collection_name
     );
     let payload = json!({
         "points": [point]
@@ -48,11 +47,10 @@ pub fn add_document(id: i32, text: &str) -> anyhow::Result<()> {
 pub fn delete_document(id: i32) -> anyhow::Result<()> {
     let client = Client::new();
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let url = format!(
         "{}/collections/{}/points/delete",
-        qdrant_url,collection_name
+        qdrant_url, collection_name
     );
     let payload = json!({
         "points": [id]
@@ -70,13 +68,11 @@ pub fn delete_document(id: i32) -> anyhow::Result<()> {
 
 pub fn create_collection() -> anyhow::Result<()> {
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
-    let embeddings_lenghth: i32 =
-        env::var("EMBEDDINGS_LENGTH")?.parse()?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
+    let embeddings_lenghth: i32 = env::var("EMBEDDINGS_LENGTH")?.parse()?;
     let client = Client::new();
     let _response = client
-        .put(format!("{}/collections/{}", qdrant_url,collection_name))
+        .put(format!("{}/collections/{}", qdrant_url, collection_name))
         .json(&json!({
             "vectors": {
                 "size": embeddings_lenghth,
@@ -94,11 +90,10 @@ pub fn create_collection() -> anyhow::Result<()> {
 #[allow(dead_code)]
 pub fn delete_collection() -> anyhow::Result<()> {
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let _response = client
-        .delete(format!("{}/collections/{}", qdrant_url,collection_name))
+        .delete(format!("{}/collections/{}", qdrant_url, collection_name))
         .send()?
         .error_for_status()?;
     println!("Collection deleted: {:?}", _response.text()?);
@@ -107,11 +102,10 @@ pub fn delete_collection() -> anyhow::Result<()> {
 
 pub fn exists_collection() -> anyhow::Result<bool> {
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let response = client
-        .get(format!("{}/collections/{}", qdrant_url,collection_name))
+        .get(format!("{}/collections/{}", qdrant_url, collection_name))
         .send()?;
     Ok(response.status().is_success())
 }
@@ -140,12 +134,11 @@ pub fn last_document_id() -> anyhow::Result<i32> {
 }
 pub fn all_documents() -> anyhow::Result<Vec<Document>> {
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let url = format!(
         "{}/collections/{}/points/scroll",
-        qdrant_url,collection_name
+        qdrant_url, collection_name
     );
     let mut documents = Vec::new();
     let mut offset: Option<usize> = None;
@@ -242,11 +235,10 @@ pub fn search(query: &str, limit: usize) -> anyhow::Result<Vec<Document>> {
     let query_vector = emb(query)?;
     let client = Client::new();
     let qdrant_url = env::var("QDRANT_URL")?;
-    let collection_name =
-        env::var("QDRANT_COLLECTION_NAME")?;
+    let collection_name = env::var("QDRANT_COLLECTION_NAME")?;
     let url = format!(
         "{}/collections/{}/points/search",
-        qdrant_url,collection_name
+        qdrant_url, collection_name
     );
     let payload = json!({
         "vector": query_vector,
@@ -255,13 +247,13 @@ pub fn search(query: &str, limit: usize) -> anyhow::Result<Vec<Document>> {
         "with_vector": false,
     });
 
-    let response = client
-        .post(&url)
-        .json(&payload)
-        .send()?;
+    let response = client.post(&url).json(&payload).send()?;
     let status = response.status();
     if !status.is_success() {
-        return Err(anyhow::anyhow!("Search failed: {}", response.text().unwrap_or(status.to_string())));
+        return Err(anyhow::anyhow!(
+            "Search failed: {}",
+            response.text().unwrap_or(status.to_string())
+        ));
     }
 
     let search_response: QdrantSearchResponse = response.json()?;
@@ -285,4 +277,3 @@ pub fn search(query: &str, limit: usize) -> anyhow::Result<Vec<Document>> {
         .collect();
     Ok(documents)
 }
-
