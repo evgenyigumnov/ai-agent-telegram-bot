@@ -2,9 +2,9 @@ use std::env;
 use regex::Regex;
 
 mod ai;
-mod dr;
+mod qdrant;
 
-use crate::dr::all_documents;
+use crate::qdrant::all_documents;
 use dotenv::dotenv;
 use std::sync::Arc;
 use teloxide::prelude::*;
@@ -59,10 +59,10 @@ async fn main() -> anyhow::Result<()> {
 }
 
 enum State {
+    AwaitingPassword,
     Pending,
     ConfirmForget { info: String },
     ConfirmCommand { message: String, command: String },
-    AwaitingPassword,
 }
 
 impl State {
@@ -125,7 +125,7 @@ impl State {
         );
         let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let keywords = State::extract_tag(&response, "keywords");
-        let docs = dr::search_smart(&keywords)?;
+        let docs = qdrant::search_smart(&keywords)?;
         println!("Вопрос: {}", message);
         for doc in &docs {
             println!("{}: {}", doc.distance, doc.text);
@@ -171,9 +171,9 @@ impl State {
     }
 
     pub fn exec_remember(message: &str) -> anyhow::Result<(Self, String)> {
-        let mut last_document_id = dr::last_document_id()?;
+        let mut last_document_id = qdrant::last_document_id()?;
         last_document_id += 1;
-        dr::add_document(last_document_id, message)?;
+        qdrant::add_document(last_document_id, message)?;
         // println!("Информация сохранена.");
         Ok((State::Pending, "Информация сохранена.".to_string()))
     }
@@ -185,7 +185,7 @@ impl State {
         );
         let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let keywords = State::extract_tag(&response, "keywords");
-        let doc = dr::search_one(&keywords)?;
+        let doc = qdrant::search_one(&keywords)?;
         let text = doc.text.clone();
         // println!("'{}' Забыть информацию?", text);
         Ok((
@@ -196,8 +196,8 @@ impl State {
 
     pub fn exec_forget(message: &str, info: &str) -> anyhow::Result<(Self, String)> {
         if State::is_condition(message, "согласие")? {
-            let doc = dr::search_one(info)?;
-            dr::delete_document(doc.id)?;
+            let doc = qdrant::search_one(info)?;
+            qdrant::delete_document(doc.id)?;
             // println!("Информация забыта.");
             Ok((State::Pending, "Информация забыта.".to_string()))
         } else {
@@ -274,8 +274,8 @@ impl State {
     }
 }
 fn init_qdrant() -> anyhow::Result<()> {
-    if !dr::exists_collection()? {
-        dr::create_collection()?;
+    if !qdrant::exists_collection()? {
+        qdrant::create_collection()?;
     }
     Ok(())
 }
