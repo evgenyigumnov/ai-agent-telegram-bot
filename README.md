@@ -43,7 +43,6 @@ CHAT_COMPLETIONS_MODEL=gemma-3-12b-it
 EMBEDDINGS_URL=http://127.0.0.1:1234/v1/embeddings
 EMBEDDINGS_MODEL=lm-kit/text-embedding-bge-m3
 EMBEDDINGS_LENGTH=1024
-QDRANT_URL=http://localhost:6333
 QDRANT_COLLECTION_NAME=documents
 BOT_PASSWORD=supersecret
 ```
