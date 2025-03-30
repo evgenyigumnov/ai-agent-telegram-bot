@@ -29,9 +29,9 @@ pub fn add_document(id: i32, text: &str) -> anyhow::Result<()> {
         vector: embedding,
         payload: json!({ "text": text }),
     };
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let url = format!(
         "{}/collections/{}/points?wait=true",
@@ -49,9 +49,9 @@ pub fn add_document(id: i32, text: &str) -> anyhow::Result<()> {
 #[allow(dead_code)]
 pub fn delete_document(id: i32) -> anyhow::Result<()> {
     let client = Client::new();
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let url = format!(
         "{}/collections/{}/points/delete",
         qdrant_url,collection_name
@@ -71,11 +71,11 @@ pub fn delete_document(id: i32) -> anyhow::Result<()> {
 }
 
 pub fn create_collection() -> anyhow::Result<()> {
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let embeddings_lenghth: i32 =
-        env::var("EMBEDDINGS_LENGTH").expect("EMBEDDINGS_LENGTH не установлена!").parse()?;
+        env::var("EMBEDDINGS_LENGTH")?.parse()?;
     let client = Client::new();
     let _response = client
         .put(format!("{}/collections/{}", qdrant_url,collection_name))
@@ -92,9 +92,9 @@ pub fn create_collection() -> anyhow::Result<()> {
 }
 #[allow(dead_code)]
 pub fn delete_collection() -> anyhow::Result<()> {
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let _response = client
         .delete(format!("{}/collections/{}", qdrant_url,collection_name))
@@ -105,9 +105,9 @@ pub fn delete_collection() -> anyhow::Result<()> {
 }
 
 pub fn exists_collection() -> anyhow::Result<bool> {
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let response = client
         .get(format!("{}/collections/{}", qdrant_url,collection_name))
@@ -148,9 +148,9 @@ pub fn last_document_id() -> anyhow::Result<i32> {
     Ok(last_id)
 }
 pub fn all_documents() -> anyhow::Result<Vec<Document>> {
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let client = Client::new();
     let url = format!(
         "{}/collections/{}/points/scroll",
@@ -221,9 +221,9 @@ pub fn all_documents() -> anyhow::Result<Vec<Document>> {
 #[allow(dead_code)]
 pub fn find_document(id: i32) -> anyhow::Result<Document> {
     let client = Client::new();
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let url = format!(
         "{}/collections/{}/points/{}",
         qdrant_url,collection_name, id
@@ -283,9 +283,9 @@ pub fn search_smart(query: &str) -> anyhow::Result<Vec<Document>> {
 pub fn search(query: &str, limit: usize) -> anyhow::Result<Vec<Document>> {
     let query_vector = emb(query)?;
     let client = Client::new();
-    let qdrant_url = env::var("QDRANT_URL").expect("QDRANT_URL не установлена!");
+    let qdrant_url = env::var("QDRANT_URL")?;
     let collection_name =
-        env::var("QDRANT_COLLECTION_NAME").expect("QDRANT_COLLECTION_NAME не установлена!");
+        env::var("QDRANT_COLLECTION_NAME")?;
     let url = format!(
         "{}/collections/{}/points/search",
         qdrant_url,collection_name
@@ -300,8 +300,12 @@ pub fn search(query: &str, limit: usize) -> anyhow::Result<Vec<Document>> {
     let response = client
         .post(&url)
         .json(&payload)
-        .send()?
-        .error_for_status()?;
+        .send()?;
+    let status = response.status();
+    if !status.is_success() {
+        return Err(anyhow::anyhow!("Search failed: {}", response.text().unwrap_or(status.to_string())));
+    }
+
     let search_response: QdrantSearchResponse = response.json()?;
 
     let documents = search_response

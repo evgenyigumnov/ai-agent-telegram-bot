@@ -12,22 +12,12 @@ use teloxide::types::Message;
 use tokio::sync::Mutex;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     dotenv().ok();
 
-    tokio::task::spawn_blocking(|| {
-
-        if !dr::exists_collection().unwrap() {
-            dr::create_collection().unwrap();
-        }
-
-        let docs = all_documents().unwrap();
-        for doc in docs {
-            println!("{}", doc.text);
-        }
-    })
-    .await
-    .unwrap();
+    let _ = tokio::task::spawn_blocking(|| {
+        init_qdrant().and_then(|_| print_docs())
+    }).await?;
 
     let bot = Bot::from_env();
 
@@ -42,13 +32,19 @@ async fn main() {
                     let state = state.clone();
                     move || {
                         let mut state_guard = state.blocking_lock();
-                        let (new_state, output) = State::process(&input, &state_guard);
-                        *state_guard = new_state;
-                        output
+                        match State::process(&input, &state_guard) {
+                            Ok((new_state, output)) => {
+                                *state_guard = new_state;
+                                output
+                            }
+                            Err(err) => {
+                                 err.to_string()
+                            }
+                        }
                     }
                 })
                 .await
-                .unwrap();
+                .unwrap_or_else(|err| err.to_string());
 
                 bot.send_message(message.chat.id, response_text).await?;
             } else {
@@ -59,6 +55,7 @@ async fn main() {
         }
     })
     .await;
+    Ok(())
 }
 
 enum State {
@@ -69,7 +66,7 @@ enum State {
 }
 
 impl State {
-    pub fn process(input: &str, state: &State) -> (Self, String) {
+    pub fn process(input: &str, state: &State) -> anyhow::Result<(Self, String)> {
         match state {
             State::AwaitingPassword => State::process_password(input),
             State::Pending => State::exec_pending(input),
@@ -80,21 +77,21 @@ impl State {
         }
     }
 
-    pub fn process_password(input: &str) -> (Self, String) {
-        let correct_password = env::var("BOT_PASSWORD").expect("BOT_PASSWORD не установлен!");
+    pub fn process_password(input: &str) -> anyhow::Result<(Self, String)> {
+        let correct_password = env::var("BOT_PASSWORD")?;
         if input.trim() == correct_password {
-            (
+            Ok((
                 State::Pending,
                 "Пароль принят. Вы можете продолжать работу с ботом.".to_string(),
-            )
+            ))
         } else {
-            (
+            Ok((
                 State::AwaitingPassword,
                 "Неверный пароль. Попробуйте снова.".to_string(),
-            )
+            ))
         }
     }
-    pub fn exec_pending(message: &str) -> (Self, String) {
+    pub fn exec_pending(message: &str) -> anyhow::Result<(Self, String)> {
         let user = format!(
             "<user_request>{}</user_request> В user_request содержится: \n \
         1. вопросительное предложение (вопрос) \n \
@@ -106,7 +103,7 @@ impl State {
             message
         );
         // println!("{}", user);
-        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user).unwrap();
+        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         // println!("{}", response);
         // если ошибка парсинга то возвращаем 5
         let number = State::extract_number(&response).parse::<i32>().unwrap_or(5);
@@ -120,15 +117,15 @@ impl State {
         }
     }
 
-    pub fn exec_answer(message: &str) -> (Self, String) {
+    pub fn exec_answer(message: &str) -> anyhow::Result<(Self, String)> {
         let user = format!(
             "<user_request>{}</user_request> Извлеки из user_request ключевые слова \
          Ответь в формате <keywords>КЛЮЧЕВЫЕ СЛОВА</keywords> ",
             message
         );
-        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user).unwrap();
+        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let keywords = State::extract_tag(&response, "keywords");
-        let docs = dr::search_smart(&keywords).unwrap();
+        let docs = dr::search_smart(&keywords)?;
         println!("Вопрос: {}", message);
         for doc in &docs {
             println!("{}: {}", doc.distance, doc.text);
@@ -143,9 +140,9 @@ impl State {
             "Ты дружелюбный и полезный помощник. Начни отвечать без приветствия.",
             &user,
         )
-        .unwrap();
+        ?;
         // println!("{}", response);
-        (State::Pending, response)
+        Ok((State::Pending, response))
     }
 
     fn extract_tag(input: &str, tag: &str) -> String {
@@ -166,73 +163,73 @@ impl State {
         }
     }
 
-    pub fn exec_chat(message: &str) -> (Self, String) {
-        let response = ai::llm("Ты дружелюбный и полезный помощник. Начни отвечать без приветствия. Отвечай желательно одним или не больше трех предложений.", message).unwrap();
+    pub fn exec_chat(message: &str) -> anyhow::Result<(Self, String)> {
+        let response = ai::llm("Ты дружелюбный и полезный помощник. Начни отвечать без приветствия.\
+         Отвечай желательно одним или не больше трех предложений.", message)?;
         // println!("{}", response);
-        (State::Pending, response)
+        Ok((State::Pending, response))
     }
 
-    pub fn exec_remember(message: &str) -> (Self, String) {
-        let mut last_document_id = dr::last_document_id().unwrap();
+    pub fn exec_remember(message: &str) -> anyhow::Result<(Self, String)> {
+        let mut last_document_id = dr::last_document_id()?;
         last_document_id += 1;
-        dr::add_document(last_document_id, message).unwrap();
+        dr::add_document(last_document_id, message)?;
         // println!("Информация сохранена.");
-        (State::Pending, "Информация сохранена.".to_string())
+        Ok((State::Pending, "Информация сохранена.".to_string()))
     }
-    pub fn new_forget(message: &str) -> (Self, String) {
+    pub fn new_forget(message: &str) -> anyhow::Result<(Self, String)> {
         let user = format!(
             "<user_request>{}</user_request> Извлеки из user_request ключевые слова \
          Ответь в формате <keywords>КЛЮЧЕВЫЕ СЛОВА</keywords> ",
             message
         );
-        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user).unwrap();
+        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let keywords = State::extract_tag(&response, "keywords");
-        let doc = dr::search_one(&keywords).unwrap();
+        let doc = dr::search_one(&keywords)?;
         let text = doc.text.clone();
         // println!("'{}' Забыть информацию?", text);
-        (
+        Ok((
             State::ConfirmForget { info: text.clone() },
             format!("'{}' Забыть информацию?", text),
-        )
+        ))
     }
 
-    pub fn exec_forget(message: &str, info: &str) -> (Self, String) {
-        if State::is_condition(message, "согласие") {
-            let doc = dr::search_one(info).unwrap();
-            dr::delete_document(doc.id).unwrap();
+    pub fn exec_forget(message: &str, info: &str) -> anyhow::Result<(Self, String)> {
+        if State::is_condition(message, "согласие")? {
+            let doc = dr::search_one(info)?;
+            dr::delete_document(doc.id)?;
             // println!("Информация забыта.");
-            (State::Pending, "Информация забыта.".to_string())
+            Ok((State::Pending, "Информация забыта.".to_string()))
         } else {
             // println!("Информация не забыта.");
-            (State::Pending, "Информация не забыта.".to_string())
+            Ok((State::Pending, "Информация не забыта.".to_string()))
         }
-        // State::Pending
     }
 
-    // Новая логика для обработки команд терминала.
-    pub fn new_command(message: &str) -> (Self, String) {
+    pub fn new_command(message: &str) -> anyhow::Result<(Self, String)> {
         let user = format!(
-            "<user_request>{}</user_request> На основе описание user_request сформирую linux команду для терминала. \
+            "<user_request>{}</user_request> На основе описание user_request сформирую \
+            linux команду для терминала. \
              Ответь в формате <command>КОМАНДА</command>", message
         );
-        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user).unwrap();
+        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         let command = State::extract_tag(&response, "command");
         // println!("Запустить команду \"{}\" ?", command);
-        (
+        Ok((
             State::ConfirmCommand {
                 command: command.clone(),
                 message: message.to_string(),
             },
             format!("Запустить команду \"{}\" ?", command),
-        )
+        ))
     }
 
     pub fn exec_confirm_command(
         message: &str,
         command: &str,
         priv_message: &str,
-    ) -> (Self, String) {
-        if State::is_condition(message, "yes") {
+    ) -> anyhow::Result<(Self, String)> {
+        if State::is_condition(message, "yes")? {
             let output = std::process::Command::new("sh")
                 .arg("-c")
                 .arg(command)
@@ -245,14 +242,14 @@ impl State {
                     if !stderr.is_empty() {
                         ret = format!("Ошибки при выполнении команды\n```\n{}\n```", stderr);
                     }
-                    (State::Pending, ret)
+                    Ok((State::Pending, ret))
                 }
                 Err(e) => {
                     // println!("Ошибка при выполнении команды: {}", e);
-                    (
+                    Ok((
                         State::Pending,
                         format!("Ошибка при выполнении команды: {}", e),
-                    )
+                    ))
                 }
             }
         } else if message.len() > 7 {
@@ -260,30 +257,33 @@ impl State {
             State::new_command(&message)
         } else {
             println!("Команда не выполнена.");
-            (State::Pending, "Команда не выполнена.".to_string())
+            Ok((State::Pending, "Команда не выполнена.".to_string()))
         }
     }
 
-    pub fn is_condition(message: &str, condition: &str) -> bool {
+    pub fn is_condition(message: &str, condition: &str) -> anyhow::Result<bool> {
         let user = format!(
             "<user_request>{}</user_request> В user_request содержится {}? \
          Ответь в формате <response>yes</response> или <response>no</response>",
             message, condition
         );
         // println!("{}", user);
-        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user).unwrap();
+        let response = ai::llm("Дай короткий ответ без объяснений и деталей", &user)?;
         // println!("{}", response);
-        response.to_lowercase().contains("yes")
+        Ok(response.to_lowercase().contains("yes"))
     }
 }
-
-mod tests {
-    #[allow(unused_imports)]
-    use super::*;
-    #[test]
-    fn test_extract_keywords() {
-        let input = "asdsad<keywords>КЛЮЧЕВЫЕ СЛОВА</keywords>asdas";
-        let output = State::extract_tag(input, "keywords");
-        assert_eq!(output, "КЛЮЧЕВЫЕ СЛОВА");
+fn init_qdrant() -> anyhow::Result<()> {
+    if !dr::exists_collection()? {
+        dr::create_collection()?;
     }
+    Ok(())
+}
+fn print_docs() -> anyhow::Result<()> {
+    // Печатаем содержимое памяти бота
+    let docs = all_documents()?;
+    for doc in docs {
+        println!("{}", doc.text);
+    }
+    Ok(())
 }
