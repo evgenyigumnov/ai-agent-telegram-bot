@@ -49,12 +49,9 @@ BOT_PASSWORD=supersecret
 
 ## 🧑‍💻 Local Development
 
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Run the bot
-cargo run
+Uncomment and configure the following environment variables in `.env`:
+```
+QDRANT_URL=http://localhost:6333
 ```
 
 Make sure Qdrant and your LLM API are running and accessible. You can use Docker for Qdrant:
@@ -64,6 +61,15 @@ docker run -p 6333:6333 qdrant/qdrant
 ```
 
 And run LM Studio or similar on port 1234.
+
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Run the bot
+cargo run
+```
+
 
 ## 🤓 How it Works (Black Box)
 
