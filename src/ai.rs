@@ -4,7 +4,6 @@ use serde_json::{json, Value};
 use std::env;
 use std::time::Duration;
 
-#[allow(dead_code)]
 pub fn llm(system: &str, user: &str) -> anyhow::Result<String> {
     let api_key = env::var("OPENAI_API_KEY")?;
     let model = env::var("CHAT_COMPLETIONS_MODEL")?;
