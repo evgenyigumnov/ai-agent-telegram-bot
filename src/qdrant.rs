@@ -85,8 +85,8 @@ pub fn create_collection() -> anyhow::Result<()> {
     Ok(())
 }
 
-// Полезная функция когда embedding меняешь и у него размерность другая,
-// а в qdrant уже есть данные с другой размерностью
+// Useful function when you change embedding and it has a different dimension,
+// and qdrant already has data with a different dimension
 #[allow(dead_code)]
 pub fn delete_collection() -> anyhow::Result<()> {
     let qdrant_url = env::var("QDRANT_URL")?;
@@ -144,7 +144,6 @@ pub fn all_documents() -> anyhow::Result<Vec<Document>> {
     let mut offset: Option<usize> = None;
 
     loop {
-        // Формируем полезную нагрузку: если offset установлен, включаем его в запрос.
         let mut payload = json!({
             "limit": 100,
             "with_payload": true,
@@ -185,8 +184,6 @@ pub fn all_documents() -> anyhow::Result<Vec<Document>> {
                 }
             }
 
-            // Если есть значение offset для следующей страницы, обновляем его,
-            // иначе прерываем цикл
             offset = result
                 .get("next_page_offset")
                 .and_then(|v| v.as_u64())
@@ -212,7 +209,7 @@ pub fn search_one(query: &str) -> anyhow::Result<Document> {
 }
 
 // distance > 0.6
-// если ничего нет то просто берет первый документ
+// if there is nothing then just takes the first document
 pub fn search_smart(query: &str) -> anyhow::Result<Vec<Document>> {
     let documents = search(query, 3)?;
     if documents.is_empty() {

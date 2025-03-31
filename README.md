@@ -1,40 +1,39 @@
-[`English version`](https://github.com/evgenyigumnov/ai-agent-telegram-bot/tree/english)
-# 🤖 Телеграм-бот AI-агента
+# 🤖 AI Agent Telegram Bot
 
-Умный и дружелюбный Telegram-бот с поддержкой ИИ, который может отвечать на вопросы, сохранять и забывать информацию, а также выполнять команды терминала по запросу. Построен на Rust, использует LLM и векторный поиск через Qdrant.
+A smart and friendly AI-powered Telegram bot that can answer questions, store and forget information, and even execute terminal commands on request. Built with Rust, powered by LLMs and vector search via Qdrant.
 
-## 🧠 Особенности
+## 🧠 Features
 
-- 🔐 Доступ с защитой паролем
-- 💬 Классифицирует ввод пользователя (вопрос, информация, запрос на забывание, команда и т.д.)
-- 📚 Сохраняет и ищет документы с использованием векторных эмбеддингов (Qdrant)
-- 🤖 Общается с LLM для рассуждений, классификации и ответов
-- 💥 Может выполнять команды Linux после подтверждения
-- 🔁 Взаимодействие на основе состояний (например, диалоги с подтверждением)
-- 🐳 Поддержка Docker и Docker Compose
+- 🔐 Password-protected access
+- 💬 Classifies user input (question, info, forget request, command, etc.)
+- 📚 Stores and searches documents with vector embeddings (Qdrant)
+- 🤖 Talks to an LLM for reasoning, classification, and responses
+- 💥 Can execute Linux commands after confirmation
+- 🔁 State-based interaction flow (e.g., confirmation dialogs)
+- 🐳 Docker & Docker Compose support
 
-## 🛠 Технологический стек
+## 🛠 Tech Stack
 
-- Rust + асинхронный runtime Tokio
-- [`teloxide`](https://github.com/teloxide/teloxide) — фреймворк для Telegram-ботов
-- [`reqwest`](https://github.com/seanmonstar/reqwest) — HTTP клиент
-- [`serde`](https://github.com/serde-rs/serde) — сериализация JSON
-- [`qdrant`](https://qdrant.tech/) — векторный поисковый движок
-- Любой LLM, поддерживающий API, совместимый с OpenAI (например, [`lm-studio`](https://github.com/lmstudio-ai/lms), [`ollama`](https://github.com/ollama/ollama) и т.д.)
+- Rust + Tokio async runtime
+- [`teloxide`](https://github.com/teloxide/teloxide) — Telegram bot framework
+- [`reqwest`](https://github.com/seanmonstar/reqwest) — HTTP client
+- [`serde`](https://github.com/serde-rs/serde) — JSON serialization
+- [`qdrant`](https://qdrant.tech/) — Vector search engine
+- Any LLM that supports OpenAI-compatible API (e.g. [`lm-studio`](https://github.com/lmstudio-ai/lms), [`ollama`](https://github.com/ollama/ollama), etc.)
 
-## 🚀 Быстрый старт (Docker Compose)
+## 🚀 Quickstart (Docker Compose)
 
 ```bash
-# Скопируйте .env-example и настройте ваши ключи
+# Copy .env-example and configure your keys
 cp .env-example .env
 
-# Соберите и запустите
+# Build and run
 docker compose up --build
 ```
 
-> Убедитесь, что ваш LLM-сервер запущен и доступен по указанным URL в файле `.env`.
+> Make sure your LLM server is running and accessible at the given URLs in `.env`.
 
-## 📦 Переменные окружения (`.env`)
+## 📦 Environment Variables (`.env`)
 
 ```env
 TELOXIDE_TOKEN=your_telegram_bot_token
@@ -48,67 +47,44 @@ QDRANT_COLLECTION_NAME=documents
 BOT_PASSWORD=supersecret
 ```
 
-## 🧑‍💻 Локальная разработка
-
-Раскомментируйте и настройте следующие переменные окружения в файле `.env`:
-```
-QDRANT_URL=http://localhost:6333
-```
-
-Убедитесь, что Qdrant и ваш LLM API запущены и доступны. Вы можете использовать Docker для Qdrant:
-
-```bash
-docker run -p 6333:6333 qdrant/qdrant
-```
-
-А также запустите LM Studio или аналогичный сервис на порту 1234.
-
-```bash
-# Установите Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Запустите бота
-cargo run
-```
-
-## Пример чата с ботом
+## Example of chat with a bot
 
 ```
 Evgeny Igumnov:
-Привет!
+Hello!
 
 Igumnov's memory extention:
-Неверный пароль. Попробуйте снова.
+Incorrect password. Try again.
 
 Evgeny Igumnov:
 supersecret
 
 Igumnov's memory extention:
-Пароль принят. Вы можете продолжать работу с ботом.
+Password accepted. You can continue working with the bot.
 
 Evgeny Igumnov:
-День рождения у Кати 24 ноября.
+Katya's birthday is November 24.
 
 Igumnov's memory extention:
-Информация сохранена.
+Information saved.
 
 Evgeny Igumnov:
-Какой у меня пароль от wifi?
+What is my wifi password?
 
 Igumnov's memory extention:
-Ваш пароль от Wi-Fi: 4040404040. 
+Your Wi-Fi password is 4040404040.
 
 Evgeny Igumnov:
-Запусти команду отображающую список файлов в папке текущей
+Run a command that displays a list of files in the current folder
 
 Igumnov's memory extention:
-Запустить команду "ls" ?
+Run the "ls" command?
 
 Evgeny Igumnov:
-да
+yes
 
 Igumnov's memory extention:
-Результат работы команды
+Result of the command
 
 all-files.sh
 Cargo.lock
@@ -120,93 +96,120 @@ README.md
 src
 
 Evgeny Igumnov:
-Когда у Кати день рождения?
+When is Katya's birthday?
 
 Igumnov's memory extention:
-У Кати день рождения 24 ноября.
+Katya's birthday is November 24th.
 
 Evgeny Igumnov:
-Забудь когда у Кати день рождения
+Forget when Katya's birthday is
 
 Igumnov's memory extention:
-'День рождения у Кати 24 ноября.' Забыть информацию?
+'Katya's birthday is November 24.' Forget the information?
 
 Evgeny Igumnov:
-да
+yes
 
 Igumnov's memory extention:
-Информация забыта.
+Information forgotten.
 ```
-## 🤓 Как это работает (Черный ящик)
 
-1. Бот запрашивает пароль.
-2. После входа он классифицирует каждое сообщение с помощью LLM:
-   - **Вопрос** → Использует векторный поиск + LLM для ответа.
-   - **Информационное сообщение** → Сохраняет его в Qdrant.
-   - **Запрос на забывание** → Запрашивает подтверждение и удаляет информацию из Qdrant.
-   - **Команда терминала** → Запрашивает подтверждение перед выполнением.
-3. Использует эмбеддинги для поиска семантически похожих данных.
-4. Все происходит с дружелюбными и минималистичными ответами.
+## 🧑‍💻 Local Development
 
-## 📝 Как это работает (Белый ящик)
+Uncomment and configure the following environment variables in `.env`:
+```
+QDRANT_URL=http://localhost:6333
+```
+
+Make sure Qdrant and your LLM API are running and accessible. You can use Docker for Qdrant:
+
+```bash
+docker run -p 6333:6333 qdrant/qdrant
+```
+
+And run LM Studio or similar on port 1234.
+
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Run the bot
+cargo run
+```
+
+
+## 🤓 How it Works (Black Box)
+
+1. Bot asks for a password
+2. After login, it classifies each message using the LLM:
+    - Question → Uses vector search + LLM to answer
+    - Informational text → Stores it in Qdrant
+    - Forget request → Confirms and deletes from Qdrant
+    - Terminal command → Confirms before running it
+3. Uses embeddings to find semantically similar data
+4. Everything happens with friendly and minimal responses
+
+## 📝 How it Works (White Box)
 ```mermaid
 flowchart TD
-    A[Пользователь отправляет сообщение через Telegram] --> B[Telegram-бот получает сообщение]
-    B --> C{Текущее состояние?}
-    C -- AwaitingPassword --> D[Проверка пароля: сравнение с BOT_PASSWORD]
-    D -- Valid --> E[Переключение в состояние ожидания]
+    A[User sends message via Telegram] --> B[Telegram Bot receives message]
+    B --> C{Current State?}
+    C -- AwaitingPassword --> D[Validate Password: compare with BOT_PASSWORD]
+    D -- Valid --> E[Switch to Pending State]
     D -- Invalid --> C
-    E --> F[Обработка сообщения: exec_pending]
-    F --> G[Вызов LLM для классификации типа сообщения]
-    G --> H{Тип сообщения}
+    E --> F[Process Message: exec_pending]
+    F --> G[Call LLM to classify message type]
+    G --> H{Message Type}
     
-    H -- "1: Вопрос" --> I[Извлечение ключевых слов с помощью LLM]
-    I --> J[Поиск документов в Qdrant: exec_answer]
-    J --> K[Добавление контекста документа к вопросу]
-    K --> L[Вызов LLM для генерации ответа]
-    L --> M[Отправка ответа пользователю]
+    H -- "1: Question" --> I[Extract Keywords using LLM]
+    I --> J[Search Documents in Qdrant: exec_answer]
+    J --> K[Append document context to question]
+    K --> L[Call LLM to generate answer]
+    L --> M[Send Answer to User]
     
-    H -- "2: Утверждение" --> N[Сохранение информации: exec_remember]
-    N --> O[Генерация эмбеддинга и добавление документа в Qdrant]
-    O --> P[Ответ 'Информация сохранена.']
+    H -- "2: Statement" --> N[Save Information: exec_remember]
+    N --> O[Generate embedding and add document to Qdrant]
+    O --> P[Reply 'Information saved.']
     
-    H -- "3: Забыть информацию" --> Q[Извлечение ключевых слов с помощью LLM: new_forget]
-    Q --> R[Поиск документа в Qdrant]
-    R --> S[Запрос подтверждения удаления у пользователя]
-    S --> T{Пользователь подтверждает?}
-    T -- Yes --> U[Удаление документа из Qdrant: exec_forget]
-    U --> V[Ответ 'Информация забыта.']
-    T -- No --> W[Ответ 'Информация не забыта.']
+    H -- "3: Forget Info" --> Q[Extract Keywords using LLM: new_forget]
+    Q --> R[Search Document in Qdrant]
+    R --> S[Prompt user to confirm deletion]
+    S --> T{User confirms?}
+    T -- Yes --> U[Delete document from Qdrant: exec_forget]
+    U --> V[Reply 'Information forgotten.']
+    T -- No --> W[Reply 'Information not forgotten.']
     
-    H -- "4: Команда" --> X[Извлечение команды Linux с помощью LLM: new_command]
-    X --> Y[Запрос подтверждения выполнения команды у пользователя]
-    Y --> Z{Пользователь подтверждает?}
-    Z -- Yes --> AA[Выполнение команды в терминале Linux]
-    AA --> AB[Возврат результата выполнения команды пользователю]
-    Z -- No --> AC[Ответ 'Команда не выполнена.']
+    H -- "4: Command" --> X[Extract Linux command using LLM: new_command]
+    X --> Y[Prompt user for command execution confirmation]
+    Y --> Z{User confirms?}
+    Z -- Yes --> AA[Execute command in Linux terminal]
+    AA --> AB[Return command output to user]
+    Z -- No --> AC[Reply 'Command not executed.']
     
-    H -- "Другое" --> AD[Вызов LLM для ответа в чате: exec_chat]
-    AD --> AE[Отправка ответа чата пользователю]
+    H -- "Other" --> AD[Call LLM for chat response: exec_chat]
+    AD --> AE[Send Chat reply to User]
 ```
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 ├── src/
-│   ├── main.rs        # Логика Telegram-бота и конечный автомат состояний
-│   ├── ai.rs          # Логика LLM и эмбеддингов
-│   └── qdrant.rs      # Интеграция с векторной БД Qdrant
-├── .env-example       # Шаблон конфигурации
+│   ├── main.rs        # Telegram bot logic & state machine
+│   ├── ai.rs          # LLM + embedding logic
+│   └── qdrant.rs      # Qdrant vector DB integration
+├── .env-example       # Config template
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
 ```
 
-## 🧡 Благодарности
+## 🧡 Credits
 
-- Вдохновлено реальными рабочими процессами ассистентов
-- Основано на открытых инструментах: Rust, Qdrant и сообщества LLM
+- Inspired by real assistant workflows
+- Powered by open tools: Rust, Qdrant, and community LLMs
 
 ---
 
-> Построено с ❤️ и `cargo build --release`
+> Built with ❤️ and `cargo build --release`
+
+
