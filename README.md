@@ -125,16 +125,16 @@ Evgeny Igumnov:
 Igumnov's memory extention:
 У Кати день рождения 24 ноября.
 
-Evgeny Igumnov, [31.03.2025 00:15]
+Evgeny Igumnov:
 Забудь когда у Кати день рождения
 
-Igumnov's memory extention, [31.03.2025 00:15]
+Igumnov's memory extention:
 'День рождения у Кати 24 ноября.' Забыть информацию?
 
-Evgeny Igumnov, [31.03.2025 00:15]
+Evgeny Igumnov:
 да
 
-Igumnov's memory extention, [31.03.2025 00:16]
+Igumnov's memory extention:
 Информация забыта.
 ```
 ## 🤓 Как это работает (Черный ящик)
