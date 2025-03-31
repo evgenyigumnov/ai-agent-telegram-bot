@@ -70,6 +70,74 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo run
 ```
 
+## Example of chat with a bot
+
+```
+Evgeny Igumnov:
+Hello!
+
+Igumnov's memory extention:
+Incorrect password. Try again.
+
+Evgeny Igumnov:
+supersecret
+
+Igumnov's memory extention:
+Password accepted. You can continue working with the bot.
+
+Evgeny Igumnov:
+Katya's birthday is November 24.
+
+Igumnov's memory extention:
+Information saved.
+
+Evgeny Igumnov:
+What is my wifi password?
+
+Igumnov's memory extention:
+Your Wi-Fi password is 4040404040.
+
+Evgeny Igumnov:
+Run a command that displays a list of files in the current folder
+
+Igumnov's memory extention:
+Run the "ls" command?
+
+Evgeny Igumnov:
+yes
+
+Igumnov's memory extention:
+Result of the command
+
+all-files.sh
+Cargo.lock
+Cargo.toml
+docker-compose.yml
+Dockerfile
+LICENSE
+README.md
+src
+
+Evgeny Igumnov:
+When is Katya's birthday?
+
+Igumnov's memory extention:
+Katya's birthday is November 24th.
+
+Evgeny Igumnov:
+Forget when Katya's birthday is
+
+Igumnov's memory extention:
+'Katya's birthday is November 24.' Forget the information?
+
+Evgeny Igumnov:
+yes
+
+Igumnov's memory extention:
+Information forgotten.
+```
+
+
 
 ## 🤓 How it Works (Black Box)
 
