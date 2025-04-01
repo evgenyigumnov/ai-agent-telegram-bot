@@ -12,7 +12,7 @@ EXTENSIONS=("rs" "toml")
 IGNORE=("target" ".git" "node_modules" "Cargo.lock" "system" "third_party" "tmp" "tika-service" ".cargo" "cfg" "cfg.bak2" "sources" ".fleet")
 
 # Дополнительные файлы, которые всегда нужно включить
-ADD_FILES=("$BASE_DIR/Dockerfile" "$BASE_DIR/docker-compose.yml" "$BASE_DIR/.env-example")
+ADD_FILES=("$BASE_DIR/Dockerfile" "$BASE_DIR/docker-compose.yml" "$BASE_DIR/.env-example" "$BASE_DIR/README.md")
 # Файл результата
 OUTPUT_FILE="all-files.txt"
 
